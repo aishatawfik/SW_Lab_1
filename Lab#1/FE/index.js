@@ -19,6 +19,9 @@ function fetchEmployees() {
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "Delete";
         deleteButton.classList.add("btn", "btn-danger", "btn-sm");
+        deleteButton.addEventListener("click", function () {
+          deleteEmployee(item.id);
+        });
         deleteCell.appendChild(deleteButton);
 
         row.appendChild(deleteCell);
@@ -32,32 +35,50 @@ function fetchEmployees() {
 // TODO
 // add event listener to submit button
 const submitbutton = document.querySelector(".submit");
-submitbutton.addEventListener("click", createEmployee);
-
+submitbutton.addEventListener("click", function (event) {
+  event.preventDefault();
+  createEmployee();
+});
 // TODO
 // add event listener to delete button
-const deletebutton = document.querySelector(".submit");
-submitbutton.addEventListener("click", createEmployee);
 
 // TODO
 function createEmployee() {
   // get data from input field
-  const name = document.getElementById("name");
-  const id = document.getElementById("id");
-  // send data to BE
+  const name = document.getElementById("name").value;
+  const id = document.getElementById("id").value;
+  if (!id || !name) {
+    alert("Please enter both ID and Name!");
+    return;
+  }
 
-  // call fetchEmployees
-  fetchEmployees();
+  // send data to BE
+  fetch("http://localhost:3000/api/v1/employee", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ id: id, name: name }),
+  })
+    .then((response) => response.json())
+    .then(() => {
+      fetchEmployees();
+    });
 }
 
 // TODO
-function deleteEmployee() {
+function deleteEmployee(id) {
   // get id
-  const id = document.getElementById("id");
   // send id to BE
-
+  fetch(`http://localhost:3000/api/v1/employee/${id}`, {
+    method: "DELETE",
+  })
+    .then((response) => response.json())
+    .then(() => {
+      fetchEmployees(); // Refresh employee list after deletion
+    })
+    .catch((error) => console.error("Error:", error));
   // call fetchEmployees
-  fetchEmployees();
 }
 
 fetchEmployees();
